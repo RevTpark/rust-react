@@ -14,9 +14,6 @@ fn hello_world() -> Json<Vec<User>> {
 
     let connection = establish_connection();
     let results = users.load::<User>(&connection).expect("Error Loading users");
-    // for user in results {
-    //     println!("{}", user.name);
-    // }
     Json(results)
 }
 
