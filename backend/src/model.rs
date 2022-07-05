@@ -15,7 +15,7 @@ pub struct NewUser{
     pub role: String,
     pub email: String,
     pub password: String,
-    // pub api_key: String
+    pub api_key: String
 }
 
 #[derive(Deserialize, Insertable, AsChangeset)]
@@ -32,7 +32,7 @@ pub struct User{
     pub role: String,
     pub email: String,
     pub password: String,
-    // pub api_key: String
+    pub api_key: String
 }
 
 

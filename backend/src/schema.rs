@@ -5,5 +5,6 @@ table! {
         role -> Varchar,
         email -> Varchar,
         password -> Varchar,
+        api_key -> Varchar,
     }
 }
