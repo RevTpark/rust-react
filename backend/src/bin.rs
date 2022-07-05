@@ -3,6 +3,7 @@ extern crate lib;
 
 use rocket::*;
 use rocket::serde::json::Json;
+use serde_json::json;
 use lib::*;
 use self::model::*;
 
@@ -46,11 +47,37 @@ fn create_user(data: String) -> (http::Status, Result<Json<User>, Json<String>>)
     }
 }
 
+#[post("/update/<get_id>", format="application/json", data="<data>")]
+fn update_user(data: String, get_id: i32) -> (http::Status, Result<Json<User>, Json<String>>){
+    match User::update_user(data, get_id) {
+        Ok(value) => {
+            (http::Status::Ok, Ok(Json(value)))
+        },
+        Err(error) => {
+            println!("{}", error);
+            (http::Status::Ok, Err(Json(String::new())))
+        }
+    }
+}
+
+#[get("/delete/<get_id>")]
+fn delete_user(get_id: i32) -> http::Status{
+    match User::delete_user(get_id) {
+        Ok(_value) => {
+            http::Status::NoContent
+        },
+        Err(error) => {
+            println!("{}", error);
+            http::Status::BadRequest
+        }
+    }
+}
+
 #[launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
         .mount(
             "/users",
-            routes![get_all, create_user, get_user_from_id]
+            routes![get_all, create_user, get_user_from_id, update_user, delete_user]
         )
 }
