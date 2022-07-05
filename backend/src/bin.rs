@@ -3,7 +3,6 @@ extern crate lib;
 
 use rocket::*;
 use rocket::serde::json::Json;
-use serde_json::json;
 use lib::*;
 use self::model::*;
 
@@ -16,7 +15,7 @@ fn get_all() -> (http::Status, Result<Json<Vec<User>>, Json<String>>) {
         },
         Err(error) =>{
             println!("{}", error);
-            (http::Status::NotFound, Err(Json(String::new())))
+            (http::Status::NotFound, Err(Json(get_empty_json())))
         }
     }
 }
@@ -29,7 +28,7 @@ fn get_user_from_id(get_id: i32) -> (http::Status, Result<Json<User>, Json<Strin
         },
         Err(error) => {
             println!("{}", error);
-            (http::Status::NotFound, Err(Json(String::new())))
+            (http::Status::NotFound, Err(Json(get_empty_json())))
         }
     }
 }
@@ -42,7 +41,7 @@ fn create_user(data: String) -> (http::Status, Result<Json<User>, Json<String>>)
         },
         Err(error) => {
             println!("{}", error);
-            (http::Status::BadRequest, Err(Json(String::new())))
+            (http::Status::BadRequest, Err(Json(get_empty_json())))
         }
     }
 }
@@ -55,7 +54,7 @@ fn update_user(data: String, get_id: i32) -> (http::Status, Result<Json<User>, J
         },
         Err(error) => {
             println!("{}", error);
-            (http::Status::Ok, Err(Json(String::new())))
+            (http::Status::Ok, Err(Json(get_empty_json())))
         }
     }
 }
@@ -73,11 +72,28 @@ fn delete_user(get_id: i32) -> http::Status{
     }
 }
 
+#[post("/login", format="application/json", data="<data>")]
+fn login(data: String) -> (http::Status, Result<Json<User>, Json<String>>){
+    match User::verify_user(data) {
+        Ok(value) => {
+            (http::Status::Ok, Ok(Json(value)))
+        },
+        Err(error) => {
+            println!("{}", error);
+            (http::Status::BadRequest, Err(Json(get_empty_json())))
+        }
+    }
+}
+
 #[launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
         .mount(
             "/users",
             routes![get_all, create_user, get_user_from_id, update_user, delete_user]
+        )
+        .mount(
+            "/auth",
+            routes![login]
         )
 }

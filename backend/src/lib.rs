@@ -16,3 +16,8 @@ pub fn establish_connection() -> PgConnection {
     PgConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
+
+pub fn get_empty_json() -> String{
+    let empty_json: String = serde_json::from_str::<serde_json::Value>("{}").unwrap().to_string();
+    empty_json
+}
