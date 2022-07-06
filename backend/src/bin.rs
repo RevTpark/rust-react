@@ -5,6 +5,7 @@ use rocket::*;
 use rocket::serde::json::Json;
 use lib::*;
 use self::model::*;
+use self::header::Token;
 
 
 #[get("/all")]
@@ -34,7 +35,7 @@ fn get_user_from_id(get_id: i32) -> (http::Status, Result<Json<User>, Json<Strin
 }
 
 #[post("/create", format="application/json", data="<data>")]
-fn create_user(data: String) -> (http::Status, Result<Json<User>, Json<String>>){
+fn create_user(token: Token, data: String) -> (http::Status, Result<Json<User>, Json<String>>){
     match User::add_user(data){
         Ok(value) => {
             (http::Status::Created, Ok(Json(value)))

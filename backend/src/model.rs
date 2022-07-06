@@ -5,8 +5,6 @@ use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use diesel::{insert_into, update, delete};
 use pwhash::{bcrypt, unix};
-use rocket::http::Status;
-use rocket::outcome::Outcome;
 
 #[derive(Deserialize, Insertable, AsChangeset)]
 #[table_name = "users"]
@@ -20,10 +18,18 @@ pub struct NewUser{
 
 #[derive(Deserialize, Insertable, AsChangeset)]
 #[table_name = "users"]
+pub struct UpdateUser{
+    pub name: String,
+    pub role: String,
+}
+
+#[derive(Deserialize, Insertable, AsChangeset)]
+#[table_name = "users"]
 pub struct LoginUser{
     pub email: String,
     pub password: String
 }
+
 
 #[derive(Debug, Serialize, Queryable)]
 pub struct User{
@@ -54,13 +60,14 @@ impl User{
         let conn = establish_connection();
         let mut new_user: NewUser = serde_json::from_str(&*data).unwrap();
         new_user.password = bcrypt::hash(new_user.password).unwrap();
+        new_user.api_key = bcrypt::hash(format!("{}{}", new_user.name, new_user.email)).unwrap();
         let inserted_user: Result<User, DieselError> = insert_into(users).values(new_user).get_result(&conn);
         inserted_user
     }
 
     pub fn update_user(data: String, other_id: i32) -> Result<Self, DieselError>{
         let conn = establish_connection();
-        let user: NewUser = serde_json::from_str(&*data).unwrap();
+        let user: UpdateUser = serde_json::from_str(&*data).unwrap();
         let updated_user:Result<User, DieselError> = update(users).filter(users::id.eq(other_id)).set(user).get_result(&conn);
         updated_user
     }
@@ -83,32 +90,9 @@ impl User{
                     Err(DieselError::NotFound)
                 }
             },
-            Err(error) => {
+            Err(_error) => {
                 Err(DieselError::NotFound)
             }
         }
     }
 }
-
-// struct Token(String);
-//
-// #[derive(Debug)]
-// enum ApiTokenError {
-//     Missing,
-//     Invalid,
-// }
-//
-// impl<'a, 'r> FromRequest<'a, 'r> for Token {
-//     type Error = ApiTokenError;
-//
-//     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
-//         let token = request.headers().get_one("token");
-//         match token {
-//             Some(token) => {
-//                 Outcome::Success(Token(token.to_string()))
-//             },
-//
-//             None => Outcome::Failure((Status::Unauthorized, ApiTokenError::Missing))
-//         }
-//     }
-// }

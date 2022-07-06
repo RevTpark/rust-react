@@ -4,6 +4,7 @@ extern crate dotenv;
 
 pub mod model;
 pub mod schema;
+pub mod header;
 
 use diesel::prelude::*;
 use dotenv::dotenv;
