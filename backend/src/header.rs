@@ -3,9 +3,9 @@ use crate::establish_connection;
 use crate::schema::users;
 use diesel::prelude::*;
 use crate::model::User;
-
-
-pub struct Token(String);
+use pwhash::unix;
+use dotenv::dotenv;
+use std::env;
 
 #[derive(Debug)]
 pub enum ApiTokenError {
@@ -15,8 +15,10 @@ pub enum ApiTokenError {
     GlobalTokenInvalid
 }
 
+pub struct UserToken(String);
+
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for Token {
+impl<'r> FromRequest<'r> for UserToken {
     type Error = ApiTokenError;
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
@@ -26,7 +28,7 @@ impl<'r> FromRequest<'r> for Token {
                 let conn = establish_connection();
                 match users::table.filter(users::api_key.eq(token.to_string())).first::<User>(&conn) {
                     Ok(_value) => {
-                        Outcome::Success(Token(token.to_string()))
+                        Outcome::Success(UserToken(token.to_string()))
                     },
                     Err(_error) => {
                         Outcome::Failure((Status::Unauthorized, ApiTokenError::UserTokenInvalid))
@@ -34,6 +36,32 @@ impl<'r> FromRequest<'r> for Token {
                 }
             },
             None => Outcome::Failure((Status::Unauthorized, ApiTokenError::UserTokenMissing))
+        }
+    }
+}
+
+
+pub struct GlobalToken(String);
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for GlobalToken {
+    type Error = ApiTokenError;
+
+    async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+        dotenv().ok();
+
+        let token = request.headers().get_one("Global-Api-Key");
+        match token {
+            Some(token) => {
+                let global_key = env::var("KEY").expect("KEY must be set");
+                if unix::verify(global_key, token){
+                    Outcome::Success(GlobalToken(token.to_string()))
+                }
+                else{
+                    Outcome::Failure((Status::Unauthorized, ApiTokenError::GlobalTokenInvalid))
+                }
+            },
+            None => Outcome::Failure((Status::Unauthorized, ApiTokenError::GlobalTokenMissing))
         }
     }
 }

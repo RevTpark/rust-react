@@ -1,4 +1,4 @@
-use rocket::{serde::Serialize, serde::Deserialize, request::FromRequest, Request, request};
+use rocket::{serde::Serialize, serde::Deserialize};
 use crate::establish_connection;
 use crate::schema::users::{self, dsl::*};
 use diesel::prelude::*;
