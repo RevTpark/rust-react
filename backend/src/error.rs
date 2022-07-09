@@ -20,7 +20,7 @@ impl From<DieselError> for CustomError{
     fn from(error: DieselError) -> Self {
         match error {
             DieselError::DatabaseError(_, err) => CustomError::new(Status::Conflict, err.message().to_string()),
-            DieselError::NotFound => CustomError::new(Status::NotFound, "User not found!".to_string()),
+            DieselError::NotFound => CustomError::new(Status::NotFound, "Not found!".to_string()),
             err => CustomError::new(Status::InternalServerError, format!("Something went wrong: {}", err))
         }
     }
