@@ -112,6 +112,17 @@ pub struct UpdateProduct{
 }
 
 #[derive(Debug, Serialize, Queryable)]
+pub struct DisplayProduct{
+    pub id: i32,
+    pub name: String,
+    pub price: i32,
+    pub description: String,
+    pub created_by: i32,
+    pub creator_name: String,
+    pub creator_email: String
+}
+
+#[derive(Debug, Serialize, Queryable)]
 pub struct Products{
     pub id: i32,
     pub name: String,
@@ -122,15 +133,20 @@ pub struct Products{
 
 impl Products {
 
-    pub fn get_all() -> Result<Vec<Self>, CustomError>{
+    pub fn get_all() -> Result<Vec<DisplayProduct>, CustomError>{
         let conn = establish_connection();
-        let results = products.load(&conn)?;
+        let results: Vec<DisplayProduct> = products::table.inner_join(users::table)
+            .select((products::id, products::name, products::price, products::description, users::id, users::name, users::email))
+            .load(&conn)?;
         Ok(results)
     }
 
-    pub fn from_id(other_id: i32) -> Result<Self, CustomError>{
+    pub fn from_id(other_id: i32) -> Result<DisplayProduct, CustomError>{
         let conn = establish_connection();
-        let product = products::table.filter(products::id.eq(other_id)).first(&conn)?;
+        let product: DisplayProduct = products::table.inner_join(users::table)
+            .select((products::id, products::name, products::price, products::description, users::id, users::name, users::email))
+            .filter(products::id.eq(other_id))
+            .first(&conn)?;
         Ok(product)
     }
 
@@ -152,5 +168,32 @@ impl Products {
         let conn = establish_connection();
         let result: Result<usize, DieselError> = delete(products).filter(products::id.eq(other_id)).execute(&conn);
         result
+    }
+
+    pub fn search_by_name(query: String) -> Result<Vec<DisplayProduct>, CustomError>{
+        let conn = establish_connection();
+        let result = products::table.inner_join(users::table)
+            .select((products::id, products::name, products::price, products::description, users::id, users::name, users::email))
+            .filter(products::name.ilike(format!("%{}%", query)))
+            .get_results::<DisplayProduct>(&conn)?;
+        Ok(result)
+    }
+
+    pub fn filter_by_creator(other_id: i32) -> Result<Vec<DisplayProduct>, CustomError>{
+        let conn = establish_connection();
+        let result = products::table.inner_join(users::table)
+            .select((products::id, products::name, products::price, products::description, users::id, users::name, users::email))
+            .filter(products::created_by.eq(other_id))
+            .get_results::<DisplayProduct>(&conn)?;
+        Ok(result)
+    }
+
+    pub fn filter_by_creator_name(query: String) -> Result<Vec<DisplayProduct>, CustomError>{
+        let conn = establish_connection();
+        let result = products::table.inner_join(users::table)
+            .select((products::id, products::name, products::price, products::description, users::id, users::name, users::email))
+            .filter(users::name.ilike(format!("%{}%", query)))
+            .get_results::<DisplayProduct>(&conn)?;
+        Ok(result)
     }
 }
