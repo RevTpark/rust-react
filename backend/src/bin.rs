@@ -9,6 +9,15 @@ use lib::header::GlobalToken;
 use self::model::*;
 use self::header::UserToken;
 
+#[catch(500)]
+fn internal_error() -> Json<Value> {
+    Json(get_json("Whoops! There was an Internal Server Error".to_string()))
+}
+
+#[catch(401)]
+fn unauthorized_error() -> Json<Value>{
+    Json(get_json("User Authorization Required!".to_string()))
+}
 
 #[get("/all")]
 fn get_all(_token1: GlobalToken) -> (http::Status, Result<Json<Vec<User>>, Json<Value>>) {
@@ -83,6 +92,10 @@ fn login(_token1: GlobalToken, data: String) -> (http::Status, Result<Json<User>
     }
 }
 
+#[get("/logout")]
+fn logout(_token1: GlobalToken, _token2: UserToken) -> Json<Value>{
+    Json(get_json("Logout Success".to_string()))
+}
 
 
 #[launch]
@@ -94,6 +107,10 @@ fn rocket() -> Rocket<Build> {
         )
         .mount(
             "/auth",
-            routes![login]
+            routes![login, logout]
+        )
+        .register(
+            "/",
+            catchers![internal_error, unauthorized_error]
         )
 }
