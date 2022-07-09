@@ -6,6 +6,7 @@ use diesel::result::Error as DieselError;
 use diesel::{insert_into, update, delete};
 use pwhash::{bcrypt, unix};
 use crate::error::CustomError;
+use crate::schema::products::{self, dsl::*};
 
 #[derive(Deserialize, Insertable, AsChangeset)]
 #[table_name = "users"]
@@ -82,7 +83,7 @@ impl User{
     pub fn verify_user(data: String) -> Result<User, CustomError>{
         let conn = establish_connection();
         let creds: LoginUser = serde_json::from_str(&*data).unwrap();
-        let user = users::table.filter(users::email.eq(creds.email)).first::<User>(&conn)?;
+        let user = users::table.filter(email.eq(creds.email)).first::<User>(&conn)?;
 
         if unix::verify(creds.password, &user.password) {
             Ok(user)
@@ -90,5 +91,66 @@ impl User{
         else{
             Err(CustomError::new(http::Status::Unauthorized, "Invalid Credentials Provided!".to_string()))
         }
+    }
+}
+
+#[derive(Queryable, Deserialize, Insertable, AsChangeset)]
+#[table_name = "products"]
+pub struct NewProduct{
+    pub name: String,
+    pub price: i32,
+    pub description: String,
+    pub created_by: i32
+}
+
+#[derive(Deserialize, Insertable, AsChangeset)]
+#[table_name = "products"]
+pub struct UpdateProduct{
+    pub name: String,
+    pub price: i32,
+    pub description: String,
+}
+
+#[derive(Debug, Serialize, Queryable)]
+pub struct Products{
+    pub id: i32,
+    pub name: String,
+    pub price: i32,
+    pub description: String,
+    pub created_by: i32
+}
+
+impl Products {
+
+    pub fn get_all() -> Result<Vec<Self>, CustomError>{
+        let conn = establish_connection();
+        let results = products.load(&conn)?;
+        Ok(results)
+    }
+
+    pub fn from_id(other_id: i32) -> Result<Self, CustomError>{
+        let conn = establish_connection();
+        let product = products::table.filter(products::id.eq(other_id)).first(&conn)?;
+        Ok(product)
+    }
+
+    pub fn add_product(data: String) -> Result<Self, CustomError>{
+        let conn = establish_connection();
+        let new_product: NewProduct = serde_json::from_str(&*data).unwrap();
+        let inserted_product = insert_into(products).values(new_product).get_result(&conn)?;
+        Ok(inserted_product)
+    }
+
+    pub fn update_product(data: String, other_id: i32) -> Result<Self, CustomError>{
+        let conn = establish_connection();
+        let product: UpdateProduct = serde_json::from_str(&*data).unwrap();
+        let updated_product = update(products).filter(products::id.eq(other_id)).set(product).get_result(&conn)?;
+        Ok(updated_product)
+    }
+
+    pub fn delete_product(other_id: i32) -> Result<usize, DieselError>{
+        let conn = establish_connection();
+        let result: Result<usize, DieselError> = delete(products).filter(products::id.eq(other_id)).execute(&conn);
+        result
     }
 }
