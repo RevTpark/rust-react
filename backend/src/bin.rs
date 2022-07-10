@@ -98,7 +98,7 @@ fn logout(_token1: GlobalToken, _token2: UserToken) -> Json<Value>{
 }
 
 #[get("/all")]
-fn get_all_products(_token1: GlobalToken) -> (http::Status, Result<Json<Vec<Products>>, Json<Value>>) {
+fn get_all_products(_token1: GlobalToken) -> (http::Status, Result<Json<Vec<DisplayProduct>>, Json<Value>>) {
     match Products::get_all() {
         Ok(value) => {
             (http::Status::Ok, Ok(Json(value)))
@@ -110,7 +110,7 @@ fn get_all_products(_token1: GlobalToken) -> (http::Status, Result<Json<Vec<Prod
 }
 
 #[get("/<get_id>")]
-fn get_product_from_id(_token1: GlobalToken, get_id: i32) -> (http::Status, Result<Json<Products>, Json<Value>>) {
+fn get_product_from_id(_token1: GlobalToken, get_id: i32) -> (http::Status, Result<Json<DisplayProduct>, Json<Value>>) {
     match Products::from_id(get_id) {
         Ok(value) => {
             (http::Status::Ok, Ok(Json(value)))
@@ -158,6 +158,42 @@ fn delete_product(_token1: GlobalToken, _token2: UserToken, get_id: i32) -> http
     }
 }
 
+#[get("/search/<query>")]
+fn search_products_name(_token1: GlobalToken, query: String) -> (http::Status, Result<Json<Vec<DisplayProduct>>, Json<Value>>){
+    match Products::search_by_name(query) {
+        Ok(value) => {
+            (http::Status::Ok, Ok(Json(value)))
+        },
+        Err(error) =>{
+            (error.status_code, Err(Json(get_json(error.message))))
+        }
+    }
+}
+
+#[get("/search/creator/<get_id>")]
+fn search_products_creator_id(_token1: GlobalToken, get_id: i32) -> (http::Status, Result<Json<Vec<DisplayProduct>>, Json<Value>>){
+    match Products::filter_by_creator(get_id) {
+        Ok(value) => {
+            (http::Status::Ok, Ok(Json(value)))
+        },
+        Err(error) =>{
+            (error.status_code, Err(Json(get_json(error.message))))
+        }
+    }
+}
+
+#[get("/search/creator/name/<query>")]
+fn search_products_creator_name(_token1: GlobalToken, query: String) -> (http::Status, Result<Json<Vec<DisplayProduct>>, Json<Value>>){
+    match Products::filter_by_creator_name(query) {
+        Ok(value) => {
+            (http::Status::Ok, Ok(Json(value)))
+        },
+        Err(error) =>{
+            (error.status_code, Err(Json(get_json(error.message))))
+        }
+    }
+}
+
 #[launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
@@ -167,7 +203,7 @@ fn rocket() -> Rocket<Build> {
         )
         .mount(
             "/products",
-            routes![get_all_products, create_product, get_product_from_id, update_product, delete_product]
+            routes![get_all_products, create_product, get_product_from_id, update_product, delete_product, search_products_name, search_products_creator_id, search_products_creator_name]
         )
         .mount(
             "/auth",
