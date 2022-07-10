@@ -1,12 +1,30 @@
 
+import { BrowserRouter as Router,
+   Switch, 
+  Route,
+   Link,
+   Routes} from "react-router-dom";
 import './App.css';
-import MultipleInputs from './MultipleInputs';
 
+import Login from './login';
+import MultipleInputs from './MultipleInputs';
 function App() {
   return (
     <div className='container'>
-    <MultipleInputs/>
+     <Router>
+      
+    
+
+      
+      <Routes>
+        <Route path="Login/*" element={<Login/>} />
+        <Route path="MultipleInputs/*" element={<MultipleInputs />} />
+      </Routes>
+     
+     </Router>
     </div>
+   
+
   );
 }
 
