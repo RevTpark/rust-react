@@ -213,4 +213,5 @@ fn rocket() -> Rocket<Build> {
             "/",
             catchers![internal_error, unauthorized_error]
         )
+        .attach(CORS)
 }
