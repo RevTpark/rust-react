@@ -8,6 +8,7 @@ use lib::*;
 use lib::header::GlobalToken;
 use self::model::*;
 use self::header::UserToken;
+use std::env;
 
 #[catch(500)]
 fn internal_error() -> Json<Value> {
@@ -17,6 +18,11 @@ fn internal_error() -> Json<Value> {
 #[catch(401)]
 fn unauthorized_error() -> Json<Value>{
     Json(get_json("User Authorization Required!".to_string()))
+}
+
+#[catch(404)]
+fn invalid_route() -> Json<Value>{
+    Json(get_json("Route Does not Exists!".to_string()))
 }
 
 #[get("/all")]
@@ -196,7 +202,15 @@ fn search_products_creator_name(_token1: GlobalToken, query: String) -> (http::S
 
 #[launch]
 fn rocket() -> Rocket<Build> {
-    rocket::build()
+
+    let default_port = 8000;
+    let port: u64 = env::var("PORT")
+        .and_then(|port| Ok(port.parse::<u64>().unwrap_or(default_port)))
+        .unwrap_or(default_port);
+
+    let config = Config::figment().merge(("port", port));
+
+    rocket::custom(config)
         .mount(
             "/users",
             routes![get_all, create_user, get_user_from_id, update_user, delete_user]
@@ -211,7 +225,7 @@ fn rocket() -> Rocket<Build> {
         )
         .register(
             "/",
-            catchers![internal_error, unauthorized_error]
+            catchers![internal_error, unauthorized_error, invalid_route]
         )
         .attach(CORS)
 }
