@@ -200,6 +200,11 @@ fn search_products_creator_name(_token1: GlobalToken, query: String) -> (http::S
     }
 }
 
+#[options("/<_..>")]
+fn all_options() {
+    /* Intentionally left empty */
+}
+
 #[launch]
 fn rocket() -> Rocket<Build> {
 
@@ -211,6 +216,10 @@ fn rocket() -> Rocket<Build> {
     let config = Config::figment().merge(("port", port));
 
     rocket::custom(config)
+        .mount(
+            "/",
+            routes![all_options]
+        )
         .mount(
             "/users",
             routes![get_all, create_user, get_user_from_id, update_user, delete_user]
@@ -228,4 +237,5 @@ fn rocket() -> Rocket<Build> {
             catchers![internal_error, unauthorized_error, invalid_route]
         )
         .attach(CORS)
+        .attach(shield::Shield::new())
 }
