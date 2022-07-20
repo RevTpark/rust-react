@@ -7,7 +7,11 @@ footer{
     border-top-left-radius: 125px;
     font-size: 13px;
     line-height: 20px;
+    align-items: center;
+    justify-content: center;
+    
 }
+
 .row{
     width: 85%;
     margin: auto;
@@ -16,10 +20,10 @@ footer{
     align-items: flex-start;
     justify-content: space-between;
 }
-/* .col{
+.col{
     width: 25%;
-    padding: 10px;
-} */
+  
+}
 /* .col:nth-child(2),col:nth-child(3){
     flex-basis: 15%;
 } */
@@ -72,7 +76,7 @@ form .FaRegEnvelope{
     margin-right: 15px;
     cursor: pointer;
 }
-hr{
+.line{
     width: 90%;
     border: 0;
     border-bottom: 1px solid #fff;
@@ -99,4 +103,10 @@ hr{
 .FaPinterestP:hover{
     background-color: #E60023;
     color: #f7f7f7;
+}
+.welcome{
+    left: 20px;
+}
+.col-4,.col-2{
+    margin-left: 42px;
 }

@@ -8,18 +8,18 @@ function Footer() {
     <div className='footer-container'>
          <footer>
          <div className="row">
-        <div className="col">
+        <div className="col-4">
          <h3>Welcome</h3>
          <p>Subscribe to get the updates and offers on our latest products</p>
         </div> 
-        <div className="col">
+        <div className="col-2">
           <h3>LOCATION</h3>
           <p> Whitefield road <br/> Main Street </p>
           <p className='email-id'> abc@gmail.com</p>
           <h4>+91 - 987654321 </h4>
 
           </div> 
-        <div className="col">
+        <div className="col-2">
       <h3> Links</h3>
       <ul>
         <li>
@@ -49,11 +49,10 @@ function Footer() {
             <FaFacebook className='FaFacebook'></FaFacebook>
             <FaInstagram className='FaInstagram'></FaInstagram>
             <FaTwitter className='FaTwitter'></FaTwitter>
-            </div>
+            </div> 
           </div> 
-            
-            </div>  
-            <hr />
+           </div>  
+            <hr className='line' />
             <p className='text-center'>website @2022-All Rights Reserved</p> 
          </footer>
     </div>
