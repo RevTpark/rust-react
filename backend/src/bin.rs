@@ -213,7 +213,9 @@ fn rocket() -> Rocket<Build> {
         .and_then(|port| Ok(port.parse::<u64>().unwrap_or(default_port)))
         .unwrap_or(default_port);
 
-    let config = Config::figment().merge(("port", port));
+    let config = Config::figment()
+                    .merge(("port", port))
+                    .merge(("address", "0.0.0.0"));
 
     rocket::custom(config)
         .mount(
