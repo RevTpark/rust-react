@@ -17,7 +17,9 @@ And you should have a running server at `http://127.0.0.1:8000`
 
 # API Documentations
 ## Basic Information
-- Base Url: `http://127.0.0.1:8000`
+- Base Url: 
+  - `http://127.0.0.1:8000`
+  - `https://rust-react.herokuapp.com/`
 - Status Codes
   | Code |           Description |
   | :--- | --------------------: |
